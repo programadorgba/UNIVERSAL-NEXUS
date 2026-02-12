@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, ArrowLeft, Zap } from "lucide-react";
 import { superheroAPI } from "../services/api";
@@ -30,21 +30,21 @@ const CharacterGrid = () => {
     { id: "popular", icon: iconPopular, label: "Populares" },
   ];
 
-  useEffect(() => {
-    loadPopularCharacters();
-  }, []);
+  const [hasMore, setHasMore] = useState(true);
+  const [allPopularCharacters, setAllPopularCharacters] = useState([]);
 
-  const loadPopularCharacters = async () => {
+  const loadPopularCharacters = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const popularNames = [
-        "Batman",
-        "Superman",
-        "Spider-Man",
-        "Iron Man",
-        "Wonder Woman",
-        "Hulk",
+        "Batman", "Superman", "Wonder Woman", "The Flash", "Aquaman",
+        "Green Lantern", "Joker", "Harley Quinn", "Cyborg", "Spider-Man",
+        "Iron Man", "Hulk", "Thor", "Captain America", "Black Widow",
+        "Black Panther", "Doctor Strange", "Wolverine", "Magneto", "Venom",
+        "Groot", "Rocket Raccoon", "Star-Lord", "Gamora", "Drax", "Daredevil",
+        "Punisher", "Deadpool", "Storm", "Cyclops", "Jean Grey", "Beast",
+        "Professor X", "Silver Surfer", "Ghos Rider", "Blade", "Spawn", "Hellboy"
       ];
 
       const promises = popularNames.map(async (name) => {
@@ -58,15 +58,33 @@ const CharacterGrid = () => {
 
       const results = await Promise.all(promises);
       const validCharacters = results.filter((char) => char !== null);
+      
+      // Eliminar duplicados si los hay (por ID)
+      const uniqueCharacters = Array.from(new Map(validCharacters.map(item => [item.id, item])).values());
 
-      setCharacters(validCharacters);
-      setFilteredCharacters(validCharacters);
+      setAllPopularCharacters(uniqueCharacters);
+      // Mostrar los primeros 20
+      setCharacters(uniqueCharacters.slice(0, 20));
+      setFilteredCharacters(uniqueCharacters.slice(0, 20));
+      setHasMore(uniqueCharacters.length > 20);
     } catch (err) {
       console.error("Error loading characters:", err);
       setError("Error al cargar personajes");
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    loadPopularCharacters();
+  }, [loadPopularCharacters]);
+
+  const loadMoreCharacters = () => {
+    const nextLimit = characters.length + 20;
+    const nextBatch = allPopularCharacters.slice(0, nextLimit);
+    setCharacters(nextBatch);
+    setFilteredCharacters(nextBatch);
+    setHasMore(allPopularCharacters.length > nextLimit);
   };
 
   const handleSearch = async (e) => {
@@ -79,6 +97,7 @@ const CharacterGrid = () => {
 
     setLoading(true);
     setError(null);
+    setHasMore(false);
 
     try {
       const result = await superheroAPI.searchByName(searchTerm);
@@ -112,25 +131,31 @@ const CharacterGrid = () => {
     switch (categoryId) {
       case "heroes":
         filtered = characters.filter((char) => char.alignment === "good");
+        setHasMore(false);
         break;
       case "villains":
         filtered = characters.filter((char) => char.alignment === "bad");
+        setHasMore(false);
         break;
       case "marvel":
         filtered = characters.filter((char) =>
           char.publisher?.toLowerCase().includes("marvel"),
         );
+        setHasMore(false);
         break;
       case "dc":
         filtered = characters.filter((char) =>
           char.publisher?.toLowerCase().includes("dc"),
         );
+        setHasMore(false);
         break;
       case "popular":
         filtered = characters.slice(0, 10);
+        setHasMore(false);
         break;
       default:
         filtered = characters;
+        setHasMore(allPopularCharacters.length > characters.length);
     }
 
     setFilteredCharacters(filtered);
@@ -270,6 +295,14 @@ const CharacterGrid = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {!loading && hasMore && filteredCharacters.length > 0 && activeCategory === "all" && !searchTerm && (
+          <div className="load-more-container">
+            <button className="load-more-btn" onClick={loadMoreCharacters}>
+              Cargar más superhéroes
+            </button>
           </div>
         )}
 

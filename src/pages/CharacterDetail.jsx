@@ -16,6 +16,8 @@ const CharacterDetail = () => {
   const [mediaLoading, setMediaLoading] = useState(false)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('info')
+  const [activeMediaTab, setActiveMediaTab] = useState('movies')
+  const [activeConnectionsTab, setActiveConnectionsTab] = useState('friends')
 
   useEffect(() => {
     loadCharacter()
@@ -117,7 +119,7 @@ const CharacterDetail = () => {
   const alignmentInfo = getAlignmentInfo(character.biography?.alignment)
 
   // Generar URL de imagen desde CDN usando el ID
-  const characterImage = `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/${character.id}.jpg`
+  const characterImage = character.images?.lg || character.images?.md || character.image?.url || `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/${character.id}.jpg`
 
   return (
     <div className="character-detail-page">
@@ -210,306 +212,327 @@ const CharacterDetail = () => {
         <div className="tab-content">
           {activeTab === 'info' && (
             <div className="info-tab fade-in">
-              {/* Power Stats */}
-              {character.powerstats && (
-                <div className="info-card">
-                  <h2 className="card-title">
-                    <Zap size={24} />
-                    Estadísticas de Poder
-                  </h2>
-                  <div className="stats-grid">
-                    <StatBar 
-                      icon={Brain} 
-                      label="Inteligencia" 
-                      value={character.powerstats.intelligence}
-                      color="#3b82f6"
-                    />
-                    <StatBar 
-                      icon={Activity} 
-                      label="Fuerza" 
-                      value={character.powerstats.strength}
-                      color="#ef4444"
-                    />
-                    <StatBar 
-                      icon={Zap} 
-                      label="Velocidad" 
-                      value={character.powerstats.speed}
-                      color="#f59e0b"
-                    />
-                    <StatBar 
-                      icon={Shield} 
-                      label="Durabilidad" 
-                      value={character.powerstats.durability}
-                      color="#10b981"
-                    />
-                    <StatBar 
-                      icon={Target} 
-                      label="Poder" 
-                      value={character.powerstats.power}
-                      color="#8b5cf6"
-                    />
-                    <StatBar 
-                      icon={Heart} 
-                      label="Combate" 
-                      value={character.powerstats.combat}
-                      color="#ec4899"
-                    />
-                  </div>
-                </div>
-              )}
+              <div className="info-dashboard">
+                {/* Main Stats and Bio Row */}
+                <div className="dashboard-row">
+                  {/* Power Stats */}
+                  {character.powerstats && (
+                    <div className="info-card stats-card">
+                      <h2 className="card-title">
+                        <Zap size={20} />
+                        Estadísticas
+                      </h2>
+                      <div className="stats-grid">
+                        <StatBar 
+                          icon={Brain} 
+                          label="Inteligencia" 
+                          value={character.powerstats.intelligence}
+                          color="#3b82f6"
+                        />
+                        <StatBar 
+                          icon={Activity} 
+                          label="Fuerza" 
+                          value={character.powerstats.strength}
+                          color="#ef4444"
+                        />
+                        <StatBar 
+                          icon={Zap} 
+                          label="Velocidad" 
+                          value={character.powerstats.speed}
+                          color="#f59e0b"
+                        />
+                        <StatBar 
+                          icon={Shield} 
+                          label="Durabilidad" 
+                          value={character.powerstats.durability}
+                          color="#10b981"
+                        />
+                        <StatBar 
+                          icon={Target} 
+                          label="Poder" 
+                          value={character.powerstats.power}
+                          color="#8b5cf6"
+                        />
+                        <StatBar 
+                          icon={Heart} 
+                          label="Combate" 
+                          value={character.powerstats.combat}
+                          color="#ec4899"
+                        />
+                      </div>
+                    </div>
+                  )}
 
-              {/* Biography - SINGLE COLUMN */}
-              {character.biography && (
-                <div className="info-card">
-                  <h2 className="card-title">
-                    <BookOpen size={24} />
-                    Biografía
-                  </h2>
-                  <div className="info-grid-single">
-                    {character.biography.realName && character.biography.realName !== '-' && (
-                      <div className="info-item">
-                        <span className="info-label">Nombre completo</span>
-                        <span className="info-value">{character.biography.realName}</span>
-                      </div>
-                    )}
-                    {character.biography.placeOfBirth && 
-                     character.biography.placeOfBirth !== '-' && (
-                      <div className="info-item">
-                        <span className="info-label">Lugar de nacimiento</span>
-                        <span className="info-value">{character.biography.placeOfBirth}</span>
-                      </div>
-                    )}
-                    {character.biography.firstAppearance && character.biography.firstAppearance !== '-' && (
-                      <div className="info-item">
-                        <span className="info-label">Primera aparición</span>
-                        <span className="info-value">{character.biography.firstAppearance}</span>
-                      </div>
-                    )}
-                    {character.biography.publisher && (
-                      <div className="info-item">
-                        <span className="info-label">Editorial</span>
-                        <span className="info-value">{character.biography.publisher}</span>
-                      </div>
-                    )}
-                    {character.biography.alignment && (
-                      <div className="info-item">
-                        <span className="info-label">Alineación</span>
-                        <span className="info-value">{alignmentInfo.text}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Apariencia y Trabajo - GRID DE 2 COLUMNAS */}
-              <div className="grid-2">
-                {/* Appearance */}
-                {character.appearance && (
-                  <div className="info-card">
-                    <h2 className="card-title">
-                      <User size={24} />
-                      Apariencia
-                    </h2>
-                    <div className="info-grid">
-                      {character.appearance.gender && character.appearance.gender !== '-' && (
+                  {/* Biography */}
+                  {character.biography && (
+                    <div className="info-card bio-card">
+                      <h2 className="card-title">
+                        <BookOpen size={20} />
+                        Biografía
+                      </h2>
+                      <div className="info-grid-single compact">
+                        {character.biography.realName && character.biography.realName !== '-' && (
+                          <div className="info-item">
+                            <span className="info-label">Nombre real</span>
+                            <span className="info-value">{character.biography.realName}</span>
+                          </div>
+                        )}
+                        {character.biography.placeOfBirth && 
+                         character.biography.placeOfBirth !== '-' && (
+                          <div className="info-item">
+                            <span className="info-label">Lugar de nacimiento</span>
+                            <span className="info-value">{character.biography.placeOfBirth}</span>
+                          </div>
+                        )}
+                        {character.biography.publisher && (
+                          <div className="info-item">
+                            <span className="info-label">Editorial</span>
+                            <span className="info-value">{character.biography.publisher}</span>
+                          </div>
+                        )}
                         <div className="info-item">
-                          <span className="info-label">Género</span>
-                          <span className="info-value">{character.appearance.gender}</span>
+                          <span className="info-label">Alineación</span>
+                          <span className="info-value">{alignmentInfo.text}</span>
                         </div>
-                      )}
-                      {character.appearance.race && character.appearance.race !== 'null' && character.appearance.race !== '-' && (
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Appearance and Work Row */}
+                <div className="dashboard-row secondary">
+                  {/* Appearance */}
+                  {character.appearance && (
+                    <div className="info-card">
+                      <h2 className="card-title">
+                        <User size={20} />
+                        Físico
+                      </h2>
+                      <div className="info-grid-compact">
                         <div className="info-item">
                           <span className="info-label">Raza</span>
-                          <span className="info-value">{character.appearance.race}</span>
+                          <span className="info-value">{character.appearance.race !== 'null' ? character.appearance.race : 'Desconocida'}</span>
                         </div>
-                      )}
-                      {character.appearance.height && 
-                       Array.isArray(character.appearance.height) && 
-                       character.appearance.height[0] !== '-' && (
                         <div className="info-item">
                           <span className="info-label">Altura</span>
-                          <span className="info-value">{character.appearance.height.join(' / ')}</span>
+                          <span className="info-value">{Array.isArray(character.appearance.height) ? character.appearance.height[1] : character.appearance.height}</span>
                         </div>
-                      )}
-                      {character.appearance.weight && 
-                       Array.isArray(character.appearance.weight) && 
-                       character.appearance.weight[0] !== '- lb' && character.appearance.weight[0] !== '-' && (
                         <div className="info-item">
                           <span className="info-label">Peso</span>
-                          <span className="info-value">{character.appearance.weight.join(' / ')}</span>
+                          <span className="info-value">{Array.isArray(character.appearance.weight) ? character.appearance.weight[1] : character.appearance.weight}</span>
                         </div>
-                      )}
-                      {character.appearance.eyeColor && character.appearance.eyeColor !== '-' && (
                         <div className="info-item">
-                          <span className="info-label">Color de ojos</span>
+                          <span className="info-label">Ojos</span>
                           <span className="info-value">{character.appearance.eyeColor}</span>
                         </div>
-                      )}
-                      {character.appearance.hairColor && character.appearance.hairColor !== '-' && (
-                        <div className="info-item">
-                          <span className="info-label">Color de cabello</span>
-                          <span className="info-value">{character.appearance.hairColor}</span>
-                        </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Work */}
-                {character.work && (
-                  <div className="info-card">
-                    <h2 className="card-title">
-                      <Briefcase size={24} />
-                      Trabajo
-                    </h2>
-                    <div className="info-grid">
-                      {character.work.occupation && character.work.occupation !== '-' && (
+                  {/* Work */}
+                  {character.work && (
+                    <div className="info-card">
+                      <h2 className="card-title">
+                        <Briefcase size={20} />
+                        Ocupación
+                      </h2>
+                      <div className="info-grid-single compact">
                         <div className="info-item">
-                          <span className="info-label">Ocupación</span>
-                          <span className="info-value">{character.work.occupation}</span>
+                          <span className="info-label">Trabajo</span>
+                          <span className="info-value scroll-x">{character.work.occupation}</span>
                         </div>
-                      )}
-                      {character.work.base && character.work.base !== '-' && (
                         <div className="info-item">
-                          <span className="info-label">Base de operaciones</span>
-                          <span className="info-value">{character.work.base}</span>
+                          <span className="info-label">Base</span>
+                          <span className="info-value scroll-x">{character.work.base}</span>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === 'media' && (
             <div className="media-tab fade-in">
+              <div className="submenu">
+                <button 
+                  className={`submenu-item ${activeMediaTab === 'movies' ? 'active' : ''}`}
+                  onClick={() => setActiveMediaTab('movies')}
+                >
+                  <Film size={18} />
+                  Películas
+                </button>
+                <button 
+                  className={`submenu-item ${activeMediaTab === 'comics' ? 'active' : ''}`}
+                  onClick={() => setActiveMediaTab('comics')}
+                >
+                  <BookOpen size={18} />
+                  Cómics
+                </button>
+              </div>
+
               {mediaLoading ? (
                 <div className="coming-soon">
                   <div className="spinner"></div>
-                  <p>Cargando películas y cómics...</p>
+                  <p>Cargando contenido...</p>
                 </div>
               ) : (
-                <>
-                  {/* Movies */}
-                  {media.movies && media.movies.length > 0 && (
+                <div className="media-content">
+                  {activeMediaTab === 'movies' && (
                     <div className="media-section">
                       <div className="info-card">
                         <h2 className="card-title">
                           <Film size={24} />
-                          Películas ({media.movies.length})
+                          Películas {media.movies?.length > 0 && `(${media.movies.length})`}
                         </h2>
-                        <div className="media-grid">
-                          {media.movies.map((movie, index) => (
-                            <div key={index} className="media-card">
-                              {movie.image?.medium_url && (
-                                <img 
-                                  src={movie.image.medium_url} 
-                                  alt={movie.name}
-                                  className="media-card-image"
-                                />
-                              )}
-                              <div className="media-card-info">
-                                <h3 className="media-card-title">{movie.name}</h3>
-                                {movie.release_date && (
-                                  <p className="media-card-meta">{movie.release_date}</p>
+                        {media.movies && media.movies.length > 0 ? (
+                          <div className="media-grid">
+                            {media.movies.map((movie, index) => (
+                              <div key={index} className="media-card">
+                                {movie.image?.medium_url || movie.image?.thumb_url ? (
+                                  <img 
+                                    src={movie.image.medium_url || movie.image.thumb_url} 
+                                    alt={movie.name}
+                                    className="media-card-image"
+                                  />
+                                ) : (
+                                  <div className="media-card-image placeholder">
+                                    <Film size={48} opacity={0.3} />
+                                  </div>
                                 )}
+                                <div className="media-card-info">
+                                  <h3 className="media-card-title">{movie.name}</h3>
+                                  {(movie.release_date || movie.year) && (
+                                    <p className="media-card-meta">{movie.release_date || movie.year}</p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="no-data">No hay películas registradas</p>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {/* Comics */}
-                  {media.comics && media.comics.length > 0 && (
+                  {activeMediaTab === 'comics' && (
                     <div className="media-section">
                       <div className="info-card">
                         <h2 className="card-title">
                           <BookOpen size={24} />
-                          Cómics ({media.comics.length})
+                          Cómics {media.comics?.length > 0 && `(${media.comics.length})`}
                         </h2>
-                        <div className="media-grid">
-                          {media.comics.map((comic, index) => (
-                            <div key={index} className="media-card">
-                              {comic.image?.medium_url && (
-                                <img 
-                                  src={comic.image.medium_url} 
-                                  alt={comic.name}
-                                  className="media-card-image"
-                                />
-                              )}
-                              <div className="media-card-info">
-                                <h3 className="media-card-title">{comic.name || comic.volume?.name}</h3>
-                                {comic.cover_date && (
-                                  <p className="media-card-meta">{comic.cover_date}</p>
+                        {media.comics && media.comics.length > 0 ? (
+                          <div className="media-grid">
+                            {media.comics.map((comic, index) => (
+                              <div key={index} className="media-card">
+                                {comic.image?.medium_url || comic.image?.thumb_url ? (
+                                  <img 
+                                    src={comic.image.medium_url || comic.image.thumb_url} 
+                                    alt={comic.name || comic.volume?.name}
+                                    className="media-card-image"
+                                  />
+                                ) : (
+                                  <div className="media-card-image placeholder">
+                                    <BookOpen size={48} opacity={0.3} />
+                                  </div>
                                 )}
+                                <div className="media-card-info">
+                                  <h3 className="media-card-title">
+                                    {comic.name || (comic.volume?.name ? `${comic.volume.name} #${comic.issue_number}` : 'Comic Issue')}
+                                  </h3>
+                                  {(comic.cover_date || comic.store_date) && (
+                                    <p className="media-card-meta">{comic.cover_date || comic.store_date}</p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="no-data">No hay cómics registrados</p>
+                        )}
                       </div>
                     </div>
                   )}
-
-                  {(!media.movies || media.movies.length === 0) && 
-                   (!media.comics || media.comics.length === 0) && (
-                    <div className="coming-soon">
-                      <Film size={64} />
-                      <h3>No se encontraron películas o cómics</h3>
-                      <p>No hay información disponible para este personaje en Comic Vine.</p>
-                    </div>
-                  )}
-                </>
+                </div>
               )}
             </div>
           )}
 
           {activeTab === 'connections' && (
             <div className="connections-tab fade-in">
-              <div className="info-card">
-                <h2 className="card-title">
-                  <UsersIcon size={24} />
-                  Conexiones
-                </h2>
-                <div className="info-grid-single">
-                  {character.biography?.aliases && 
-                   Array.isArray(character.biography.aliases) && 
-                   character.biography.aliases.length > 0 && 
-                   character.biography.aliases[0] !== '-' && (
-                    <div className="info-item">
-                      <span className="info-label">Alias</span>
-                      <span className="info-value">{character.biography.aliases.join(', ')}</span>
-                    </div>
-                  )}
-                  {character.connections?.connectedTo && 
-                   character.connections.connectedTo !== '-' && (
-                    <div className="info-item">
-                      <span className="info-label">Afiliación a grupos</span>
-                      <span className="info-value">{character.connections.connectedTo}</span>
-                    </div>
-                  )}
-                  {character.connections?.relatives && 
-                   character.connections.relatives !== '-' && (
-                    <div className="info-item">
-                      <span className="info-label">Parientes</span>
-                      <span className="info-value">{character.connections.relatives}</span>
-                    </div>
-                  )}
-                </div>
+              <div className="submenu">
+                <button 
+                  className={`submenu-item ${activeConnectionsTab === 'friends' ? 'active' : ''}`}
+                  onClick={() => setActiveConnectionsTab('friends')}
+                >
+                  <UsersIcon size={18} />
+                  Amigos y Aliados
+                </button>
+                <button 
+                  className={`submenu-item ${activeConnectionsTab === 'villains' ? 'active' : ''}`}
+                  onClick={() => setActiveConnectionsTab('villains')}
+                >
+                  <Target size={18} />
+                  Villanos
+                </button>
               </div>
-              
-              {(!character.biography?.aliases || character.biography.aliases.length === 0 || character.biography.aliases[0] === '-') &&
-               (!character.connections || 
-                (character.connections.connectedTo === '-' && 
-                 character.connections.relatives === '-')) && (
-                <div className="coming-soon">
-                  <UsersIcon size={64} />
-                  <h3>Conexiones</h3>
-                  <p>No hay información de conexiones disponible para este personaje.</p>
-                </div>
-              )}
+
+              <div className="connections-content">
+                {activeConnectionsTab === 'friends' && (
+                  <div className="info-card">
+                    <h2 className="card-title">
+                      <UsersIcon size={24} />
+                      Conexiones y Familia
+                    </h2>
+                    <div className="info-grid-single">
+                      {character.connections?.connectedTo && 
+                       character.connections.connectedTo !== '-' && (
+                        <div className="info-item">
+                          <span className="info-label">Afiliación a grupos</span>
+                          <span className="info-value">{character.connections.connectedTo}</span>
+                        </div>
+                      )}
+                      {character.connections?.relatives && 
+                       character.connections.relatives !== '-' && (
+                        <div className="info-item">
+                          <span className="info-label">Parientes</span>
+                          <span className="info-value">{character.connections.relatives}</span>
+                        </div>
+                      )}
+                      {character.biography?.aliases && 
+                       Array.isArray(character.biography.aliases) && 
+                       character.biography.aliases.length > 0 && 
+                       character.biography.aliases[0] !== '-' && (
+                        <div className="info-item">
+                          <span className="info-label">Alias</span>
+                          <span className="info-value">{character.biography.aliases.join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeConnectionsTab === 'villains' && (
+                  <div className="info-card">
+                    <h2 className="card-title">
+                      <Target size={24} />
+                      Rivales y Villanos
+                    </h2>
+                    <div className="info-grid-single">
+
+                      <p className="no-data">Buscando rivalidades en los archivos...</p>
+                      {character.biography?.alignment === 'good' ? (
+                        <p className="info-text">Como héroe, sus principales villanos se encuentran en sus historias de {character.biography.publisher}.</p>
+                      ) : (
+                        <p className="info-text">Como villano, sus principales oponentes son los héroes de {character.biography.publisher}.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

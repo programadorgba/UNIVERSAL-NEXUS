@@ -123,6 +123,14 @@
   border-color: rgba(252, 211, 77, 0.9);
 }
 
+.category-lucide-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+}
+
 /* ===== MAIN CONTENT ===== */
 .hp-main-content {
   flex: 1;
@@ -270,6 +278,15 @@
 
 .hp-character-card:hover::before {
   opacity: 0.35;
+}
+
+.hp-character-card.hp-extra-card {
+  cursor: default;
+}
+
+.hp-character-card.hp-extra-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
 }
 
 .hp-card-glow {

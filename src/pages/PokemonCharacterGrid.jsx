@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, ArrowLeft } from 'lucide-react'
 import { pokemonAPI } from '../services/api'
@@ -38,24 +38,44 @@ const PokemonCharacterGrid = () => {
     { id: 'flying', icon: iconUbicacion, label: 'Volador' }
   ]
 
-  useEffect(() => {
-    loadPokemon()
-  }, [])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
 
-  const loadPokemon = async () => {
+  const loadPokemon = useCallback(async (pageNum = page, isInitial = false) => {
+    if (loading && !isInitial) return
+    
     setLoading(true)
     setError(null)
     try {
-      const data = await pokemonAPI.getAll()
-      setPokemon(data)
-      setFilteredPokemon(data)
+      const perPage = 20
+      const data = await pokemonAPI.getAll(pageNum, perPage)
+      
+      if (data.length < perPage) {
+        setHasMore(false)
+      } else {
+        setHasMore(true)
+      }
+
+      if (isInitial) {
+        setPokemon(data)
+        setFilteredPokemon(data)
+      } else {
+        setPokemon(prev => [...prev, ...data])
+        setFilteredPokemon(prev => [...prev, ...data])
+      }
+      
+      setPage(pageNum + 1)
     } catch (err) {
       console.error('Error loading Pokemon:', err)
       setError('Error al cargar Pokemon')
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, loading])
+
+  useEffect(() => {
+    loadPokemon(1, true)
+  }, [loadPokemon])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -67,6 +87,7 @@ const PokemonCharacterGrid = () => {
 
     setLoading(true)
     setError(null)
+    setHasMore(false) // Disable load more during search result view
 
     try {
       const result = await pokemonAPI.searchByName(searchTerm)
@@ -88,9 +109,11 @@ const PokemonCharacterGrid = () => {
 
   const filterByCategory = (categoryId) => {
     setActiveCategory(categoryId)
+    setHasMore(false) // Disable load more during category filtering
 
     if (categoryId === 'all') {
       setFilteredPokemon(pokemon)
+      setHasMore(true)
       return
     }
 
@@ -184,56 +207,63 @@ const PokemonCharacterGrid = () => {
         </header>
 
         {error && <div className="error-message">{error}</div>}
+        
+        <div className="characters-grid">
+          {filteredPokemon.map((p, index) => {
+            const borderColor = getTypeColor(p.types)
+
+            return (
+              <div
+                key={p.id || index}
+                className="character-card"
+                style={{ '--border-color': borderColor }}
+                onClick={() => handlePokemonClick(p.id)}
+              >
+                <div className="card-glow"></div>
+                <div className="card-id">#{p.id}</div>
+
+                <div className="card-image-container">
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="card-image"
+                    onError={(e) => {
+                      console.log('Error loading image for', p.name, ':', e)
+                    }}
+                  />
+                </div>
+
+                <div className="card-info">
+                  <h3 className="card-name">{capitalize(p.name)}</h3>
+
+                  <div className="card-badges">
+                    {p.types && p.types.map((type, i) => (
+                      <span
+                        key={i}
+                        className="badge"
+                        style={{ backgroundColor: getTypeColor([type]) }}
+                      >
+                        {capitalize(type)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
         {loading && (
           <div className="loading">
             <div className="spinner"></div>
           </div>
         )}
 
-        {!loading && filteredPokemon.length > 0 && (
-          <div className="characters-grid">
-            {filteredPokemon.map((p, index) => {
-              const borderColor = getTypeColor(p.types)
-
-              return (
-                <div
-                  key={p.id || index}
-                  className="character-card"
-                  style={{ '--border-color': borderColor }}
-                  onClick={() => handlePokemonClick(p.id)}
-                >
-                  <div className="card-glow"></div>
-                  <div className="card-id">#{p.id}</div>
-
-                  <div className="card-image-container">
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="card-image"
-                      onError={(e) => {
-                        console.log('Error loading image for', p.name, ':', e)
-                      }}
-                    />
-                  </div>
-
-                  <div className="card-info">
-                    <h3 className="card-name">{capitalize(p.name)}</h3>
-
-                    <div className="card-badges">
-                      {p.types && p.types.map((type, i) => (
-                        <span
-                          key={i}
-                          className="badge"
-                          style={{ backgroundColor: getTypeColor([type]) }}
-                        >
-                          {capitalize(type)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+        {!loading && hasMore && filteredPokemon.length > 0 && activeCategory === 'all' && !searchTerm && (
+          <div className="load-more-container">
+            <button className="load-more-btn" onClick={() => loadPokemon()}>
+              Cargar más Pokémon
+            </button>
           </div>
         )}
 

@@ -22,7 +22,7 @@ const UniverseSelection = () => {
       color: '#fbbf24',
       gradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
       description: 'La galaxia muy, muy lejana',
-      enabled: false
+      enabled: true
     },
     {
       id: 'harrypotter',
@@ -40,7 +40,7 @@ const UniverseSelection = () => {
       color: '#10b981',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       description: 'La Tierra Media',
-      enabled: false
+      enabled: true
     },
     {
       id: 'disney',

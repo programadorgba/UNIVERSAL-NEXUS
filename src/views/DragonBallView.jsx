@@ -1,11 +1,13 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import DragonBallGrid from '../pages/DragonBallGrid.jsx';
+import DragonBallCharacterGrid from '../pages/DragonBallCharacterGrid.jsx';
+import DragonBallCharacterDetail from '../pages/DragonBallCharacterDetail.jsx';
 
 const DragonBallView = () => {
   return (
     <Routes>
-      <Route path="/" element={<DragonBallGrid />} />
+      <Route path="/" element={<DragonBallCharacterGrid />} />
+      <Route path="/character/:id" element={<DragonBallCharacterDetail />} />
     </Routes>
   );
 };

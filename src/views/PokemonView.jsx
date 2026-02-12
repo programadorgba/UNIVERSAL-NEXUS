@@ -1,11 +1,14 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import PokemonGrid from '../pages/PokemonGrid.jsx';
+import PokemonCharacterGrid from '../pages/PokemonCharacterGrid.jsx';
+import PokemonCharacterDetail from '../pages/PokemonCharacterDetail.jsx'; 
 
 const PokemonView = () => {
   return (
     <Routes>
-      <Route path="/" element={<PokemonGrid />} />
+      <Route path="/" element={<PokemonCharacterGrid />} />
+            <Route path="/character/:id" element={<PokemonCharacterDetail />} />
+
     </Routes>
   );
 };
