@@ -4,13 +4,11 @@ import axios from 'axios'
 // CONFIGURACIÓN DE BACKEND
 // ==========================================
 
-// 1. Cambia a 'http://localhost:3000' si estás ejecutando el servidor en tu propia computadora.
-// 2. Cambia a la URL de Render si quieres usar el servidor en la nube.
+
 
 const SUPERHERO_API_BASE_URL = 'https://superhero-backend-yoxj.onrender.com';
 // const SUPERHERO_API_BASE_URL = 'http://localhost:3000'; 
 
-console.log('Using Backend URL:', SUPERHERO_API_BASE_URL);
 
 const superheroApi = axios.create({
   baseURL: SUPERHERO_API_BASE_URL,
@@ -58,7 +56,7 @@ const STARWARS_API_BASE_URL = 'https://starwars-backend-ic37.onrender.com'
 
 const starwarsApi = axios.create({
   baseURL: STARWARS_API_BASE_URL,
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -156,16 +154,17 @@ export const starWarsAPI = {
   },
 
   // Obtener personaje por ID
-  getPersonById: async (id) => {
+// Obtener cualquier ítem por categoría e ID (LA SOLUCIÓN AL ERROR)
+  getById: async (category, id) => {
     try {
-      const response = await starwarsApi.get(`/api/people/${id}`)
+      // Usamos la categoría dinámica (people, planets, etc.)
+      const response = await starwarsApi.get(`/api/${category}/${id}`)
       return response.data || null
     } catch (error) {
-      console.error('Error fetching Star Wars person:', error)
+      console.error(`Error fetching Star Wars ${category}:`, error)
       return null
     }
   },
-
   // Buscar por nombre
   searchPeople: async (name) => {
     try {

@@ -7,7 +7,7 @@ const StarWarsView = () => {
   return (
     <Routes>
       <Route path="/" element={<StarwarsCharacterGrid />} />
-      <Route path="/character/:id" element={<StarwarsCharacterDetail />} />
+      <Route path="/:type/:id" element={<StarwarsCharacterDetail />} />
     </Routes>
   );
 };
