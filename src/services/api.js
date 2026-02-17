@@ -519,122 +519,117 @@ export const dragonBallAPI = {
   },
 };
 
-// LOTR API (Placeholder)
+// LOTR API (Backend Integration)
+const LOTR_API_BASE_URL = "https://lort-backend.onrender.com/api";
+
+const lotrApi = axios.create({
+  baseURL: LOTR_API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+lotrApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error(
+      "LOTR API Error:",
+      error.response?.data || error.message,
+    );
+    return Promise.reject(error);
+  },
+);
+
 export const lotrAPI = {
-  getPeople: async () => {
-    // Mocking LOTR data for now
-    const mockResults = [
-      {
-        id: "5cd9ad060229074400175650",
-        name: "Frodo Baggins",
-        race: "Hobbit",
-        image:
-          "https://images.metadata.sky.com/pa/7fdb48e3-466d-4b8c-8515-46a78248c8b6_LOTR_Frodo_Baggins.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175651",
-        name: "Gandalf",
-        race: "Maia",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/e/e7/Gandalf_the_Grey.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175662",
-        name: "Aragorn II Elessar",
-        race: "Human",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/b/ba/Aragorn.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175677",
-        name: "Legolas",
-        race: "Elf",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/3/33/Legolas_Greenleaf.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175678",
-        name: "Gimli",
-        race: "Dwarf",
-        image: "https://vignette.wikia.nocookie.net/lotr/images/4/43/Gimli.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175669",
-        name: "Galadriel",
-        race: "Elf",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/b/ba/Galadriel.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175672",
-        name: "Boromir",
-        race: "Human",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/b/b4/Boromir.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175653",
-        name: "Samwise Gamgee",
-        race: "Hobbit",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/2/20/Samwise_Gamgee.jpg",
-      },
-      {
-        id: "5cd9ad06022907440017565a",
-        name: "Peregrin Took",
-        race: "Hobbit",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/8/8a/Pippin_Took.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175657",
-        name: "Meriadoc Brandybuck",
-        race: "Hobbit",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/7/7b/Merry_Brandybuck.jpg",
-      },
-    ];
-    return {
-      results: mockResults,
-      count: mockResults.length,
-      hasMore: false,
-    };
+  // Obtener personajes (con paginación y filtros)
+  getCharacters: async (page = 1, limit = 20, name = null, race = null) => {
+    try {
+      let url = `/characters?page=${page}&limit=${limit}`;
+      if (name) url += `&name=${encodeURIComponent(name)}`;
+      if (race) url += `&race=${encodeURIComponent(race)}`;
+      
+      const response = await lotrApi.get(url);
+      return {
+        results: response.data.results || [],
+        total: response.data.total || 0,
+        hasMore: response.data.results?.length === limit,
+      };
+    } catch (error) {
+      console.error("Error fetching LOTR characters:", error);
+      return { results: [], total: 0, hasMore: false };
+    }
   },
+
+  // Obtener personaje por ID
+  getCharacterById: async (id) => {
+    try {
+      const response = await lotrApi.get(`/characters/${id}`);
+      return response.data || null;
+    } catch (error) {
+      console.error("Error fetching LOTR character by ID:", error);
+      return null;
+    }
+  },
+
+  // Obtener libros (con portadas)
+  getBooks: async () => {
+    try {
+      const response = await lotrApi.get("/books");
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching LOTR books:", error);
+      return [];
+    }
+  },
+
+  // Obtener capítulos de un libro
+  getBookChapters: async (bookId) => {
+    try {
+      const response = await lotrApi.get(`/books/${bookId}/chapters`);
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching book chapters:", error);
+      return [];
+    }
+  },
+
+  // Obtener películas (con pósters)
+  getMovies: async () => {
+    try {
+      const response = await lotrApi.get("/movies");
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching LOTR movies:", error);
+      return [];
+    }
+  },
+
+  // Obtener ubicaciones (con imágenes)
+  getLocations: async () => {
+    try {
+      const response = await lotrApi.get("/locations");
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching LOTR locations:", error);
+      return [];
+    }
+  },
+
+  // Búsqueda de personajes (legacy compatibility)
+  getPeople: async (page = 1, limit = 20) => {
+    return lotrAPI.getCharacters(page, limit);
+  },
+
+  // Obtener personaje por ID (legacy compatibility)
   getPersonById: async (id) => {
-    // For now returning Frodo by default or a found character
-    const characters = [
-      {
-        id: "5cd9ad060229074400175650",
-        name: "Frodo Baggins",
-        race: "Hobbit",
-        gender: "Male",
-        birth: "September 22, 2968",
-        death: "Unknown (Departed to the West in 3021)",
-        spouse: "None",
-        hair: "Brown",
-        height: "3'6\"",
-        image:
-          "https://images.metadata.sky.com/pa/7fdb48e3-466d-4b8c-8515-46a78248c8b6_LOTR_Frodo_Baggins.jpg",
-      },
-      {
-        id: "5cd9ad060229074400175651",
-        name: "Gandalf",
-        race: "Maia",
-        gender: "Male",
-        birth: "Before the Shaping of Arda",
-        death: "January 25, 3019 (Reborn as Gandalf the White)",
-        spouse: "None",
-        hair: "Grey/White",
-        height: "Variable",
-        image:
-          "https://vignette.wikia.nocookie.net/lotr/images/e/e7/Gandalf_the_Grey.jpg",
-      },
-    ];
-    const found = characters.find((c) => c.id === id) || characters[0];
-    return found;
+    return lotrAPI.getCharacterById(id);
   },
-  searchPeople: async () => {
-    return { results: [] };
+
+  // Buscar personajes por nombre (legacy compatibility)
+  searchPeople: async (name) => {
+    const result = await lotrAPI.getCharacters(1, 50, name);
+    return { results: result.results };
   },
 };
 

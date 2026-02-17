@@ -15,7 +15,11 @@ const LOTRCharacterDetail = () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await lotrAPI.getPersonById(id)
+      const data = await lotrAPI.getCharacterById(id)
+      if (!data) {
+        setError('Personaje no encontrado')
+        return
+      }
       setCharacter(data)
     } catch (err) {
       console.error('Error loading LOTR character:', err)
@@ -62,7 +66,15 @@ const LOTRCharacterDetail = () => {
           <div className="hero-background" style={{ backgroundImage: `url(${character.image})`, opacity: 0.2 }} />
           <div className="hero-content">
             <div className="hero-image-container">
-              <img src={character.image} alt={character.name} className="hero-image" style={{ borderColor: '#10b981' }} />
+              <img 
+                src={character.image} 
+                alt={character.name} 
+                className="hero-image" 
+                style={{ borderColor: '#10b981' }}
+                onError={(e) => {
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(character.name)}&size=400&background=10b981&color=fff`
+                }}
+              />
               <div className="image-glow" style={{ background: '#10b981' }}></div>
             </div>
             <div className="hero-info">
