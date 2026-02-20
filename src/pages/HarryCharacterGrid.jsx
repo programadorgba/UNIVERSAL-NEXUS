@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, ArrowLeft, Star, Film } from 'lucide-react'
 import { harryPotterAPI, harryPotterExtrasAPI } from '../services/api'
+import AppLoader from '../components/AppLoader'
 import './HarryCharacterGrid.css'
 // Importar iconos de categorías
 import iconTodos from '../assets/SUPERapi/todosharry.png';
@@ -301,7 +302,18 @@ const HarryCharacterGrid = () => {
           })}
         </div>
 
-        {loading && <div className="hp-loading"><div className="hp-spinner"></div></div>}
+        {loading && (
+          <AppLoader 
+            color="#7c3aed" 
+            label="Cargando Mundo Mágico" 
+            messages={[
+              "Agitando varitas...",
+              "Preparando pociones...",
+              "Consultando al Sombrero Seleccionador...",
+              "Enviando lechuzas..."
+            ]} 
+          />
+        )}
 
         {!loading && hasMore && filteredCharacters.length > 0 && !searchTerm && (
           <div className="load-more-container" style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', padding: '2rem' }}>

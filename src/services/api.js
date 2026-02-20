@@ -520,11 +520,11 @@ export const dragonBallAPI = {
 };
 
 // LOTR API (Backend Integration)
-const LOTR_API_BASE_URL = "https://lort-backend.onrender.com/api";
+const LOTR_API_BASE_URL = "https://lort-backend.onrender.com/api/";
 
 const lotrApi = axios.create({
   baseURL: LOTR_API_BASE_URL,
-  timeout: 15000,
+  timeout: 60000, // 60 segundos para manejar cold starts de Render
   headers: {
     "Content-Type": "application/json",
   },
@@ -533,10 +533,7 @@ const lotrApi = axios.create({
 lotrApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error(
-      "LOTR API Error:",
-      error.response?.data || error.message,
-    );
+    console.error("LOTR API Error:", error.response?.data || error.message);
     return Promise.reject(error);
   },
 );
@@ -545,10 +542,10 @@ export const lotrAPI = {
   // Obtener personajes (con paginación y filtros)
   getCharacters: async (page = 1, limit = 20, name = null, race = null) => {
     try {
-      let url = `/characters?page=${page}&limit=${limit}`;
+      let url = `characters?page=${page}&limit=${limit}`;
       if (name) url += `&name=${encodeURIComponent(name)}`;
       if (race) url += `&race=${encodeURIComponent(race)}`;
-      
+
       const response = await lotrApi.get(url);
       return {
         results: response.data.results || [],
@@ -564,7 +561,7 @@ export const lotrAPI = {
   // Obtener personaje por ID
   getCharacterById: async (id) => {
     try {
-      const response = await lotrApi.get(`/characters/${id}`);
+      const response = await lotrApi.get(`characters/${id}`);
       return response.data || null;
     } catch (error) {
       console.error("Error fetching LOTR character by ID:", error);
@@ -575,7 +572,7 @@ export const lotrAPI = {
   // Obtener libros (con portadas)
   getBooks: async () => {
     try {
-      const response = await lotrApi.get("/books");
+      const response = await lotrApi.get("books");
       return response.data || [];
     } catch (error) {
       console.error("Error fetching LOTR books:", error);
@@ -586,7 +583,7 @@ export const lotrAPI = {
   // Obtener capítulos de un libro
   getBookChapters: async (bookId) => {
     try {
-      const response = await lotrApi.get(`/books/${bookId}/chapters`);
+      const response = await lotrApi.get(`books/${bookId}/chapters`);
       return response.data || [];
     } catch (error) {
       console.error("Error fetching book chapters:", error);
@@ -597,7 +594,7 @@ export const lotrAPI = {
   // Obtener películas (con pósters)
   getMovies: async () => {
     try {
-      const response = await lotrApi.get("/movies");
+      const response = await lotrApi.get("movies");
       return response.data || [];
     } catch (error) {
       console.error("Error fetching LOTR movies:", error);
@@ -608,7 +605,7 @@ export const lotrAPI = {
   // Obtener ubicaciones (con imágenes)
   getLocations: async () => {
     try {
-      const response = await lotrApi.get("/locations");
+      const response = await lotrApi.get("locations");
       return response.data || [];
     } catch (error) {
       console.error("Error fetching LOTR locations:", error);
@@ -640,4 +637,5 @@ export {
   pokemonApi,
   dragonBallApi,
   starwarsApi,
+  lotrApi,
 };

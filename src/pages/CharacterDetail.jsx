@@ -119,7 +119,7 @@ const CharacterDetail = () => {
   const alignmentInfo = getAlignmentInfo(character.biography?.alignment)
 
   // Generar URL de imagen desde CDN usando el ID
-  const characterImage = character.images?.lg || character.images?.md || character.image?.url || `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/${character.id}.jpg`
+  const characterImage = character.image?.url || `https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/md/${character.id}.jpg`
 
   return (
     <div className="character-detail-page">

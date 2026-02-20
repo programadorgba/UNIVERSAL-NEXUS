@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, ArrowLeft, Zap } from "lucide-react";
 import { superheroAPI } from "../services/api";
 import "./CharacterGrid.css";
+import AppLoader from "../components/AppLoader";
 
 // Importar iconos de categorías
 import iconTodos from "../assets/SUPERapi/todos.png";
@@ -38,13 +39,44 @@ const CharacterGrid = () => {
     setError(null);
     try {
       const popularNames = [
-        "Batman", "Superman", "Wonder Woman", "The Flash", "Aquaman",
-        "Green Lantern", "Joker", "Harley Quinn", "Cyborg", "Spider-Man",
-        "Iron Man", "Hulk", "Thor", "Captain America", "Black Widow",
-        "Black Panther", "Doctor Strange", "Wolverine", "Magneto", "Venom",
-        "Groot", "Rocket Raccoon", "Star-Lord", "Gamora", "Drax", "Daredevil",
-        "Punisher", "Deadpool", "Storm", "Cyclops", "Jean Grey", "Beast",
-        "Professor X", "Silver Surfer", "Ghos Rider", "Blade", "Spawn", "Hellboy"
+        "Batman II",
+        "Superman ",
+        "Wonder Woman",
+        "Flash",
+        "Aquaman",
+        "Green Arrow",
+        "Joker",
+        "Harley Quinn",
+        "Cyborg",
+        "Spider-Man",
+        "Iron Man",
+        "Hulk",
+        "Thor",
+        "Captain America",
+        "Black Widow",
+        "Black Panther",
+        "Doctor Strange",
+        "Wolverine",
+        "Magneto",
+        "Venom",
+        "Groot",
+        "Rocket Raccoon",
+        "Star-Lord",
+        "Gamora",
+        "Drax",
+        "Daredevil",
+        "Punisher",
+        "Deadpool",
+        "Storm",
+        "Cyclops",
+        "Jean Grey",
+        "Beast",
+        "Professor X",
+        "Silver Surfer",
+        "Ghost Rider",
+        "Blade",
+        "Spawn",
+        "Hellboy",
       ];
 
       const promises = popularNames.map(async (name) => {
@@ -58,9 +90,11 @@ const CharacterGrid = () => {
 
       const results = await Promise.all(promises);
       const validCharacters = results.filter((char) => char !== null);
-      
+
       // Eliminar duplicados si los hay (por ID)
-      const uniqueCharacters = Array.from(new Map(validCharacters.map(item => [item.id, item])).values());
+      const uniqueCharacters = Array.from(
+        new Map(validCharacters.map((item) => [item.id, item])).values(),
+      );
 
       setAllPopularCharacters(uniqueCharacters);
       // Mostrar los primeros 20
@@ -239,6 +273,18 @@ const CharacterGrid = () => {
           </div>
         )}
 
+        {loading && (
+          <AppLoader
+            color="#7c3aed"
+            label="Cargando Mundo Mágico"
+            messages={[
+              "Agitando varitas...",
+              "Preparando pociones...",
+              "Consultando al Sombrero Seleccionador...",
+              "Enviando lechuzas...",
+            ]}
+          />
+        )}
         {!loading && filteredCharacters.length > 0 && (
           <div className="characters-grid">
             {filteredCharacters.map((character, index) => {
@@ -298,13 +344,17 @@ const CharacterGrid = () => {
           </div>
         )}
 
-        {!loading && hasMore && filteredCharacters.length > 0 && activeCategory === "all" && !searchTerm && (
-          <div className="load-more-container">
-            <button className="load-more-btn" onClick={loadMoreCharacters}>
-              Cargar más superhéroes
-            </button>
-          </div>
-        )}
+        {!loading &&
+          hasMore &&
+          filteredCharacters.length > 0 &&
+          activeCategory === "all" &&
+          !searchTerm && (
+            <div className="load-more-container">
+              <button className="load-more-btn" onClick={loadMoreCharacters}>
+                Cargar más superhéroes
+              </button>
+            </div>
+          )}
 
         {!loading && filteredCharacters.length === 0 && !error && (
           <div className="empty-state">

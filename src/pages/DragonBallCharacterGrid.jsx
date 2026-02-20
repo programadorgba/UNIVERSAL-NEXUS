@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, ArrowLeft } from 'lucide-react'
 import { dragonBallAPI } from '../services/api'
 import './CharacterGrid.css'
+import AppLoader from '../components/AppLoader'
 
 // Iconos (usando logos de DB o placeholders por ahora)
 import iconTodos from '../assets/SUPERapi/todos.png'
@@ -59,7 +60,7 @@ const DragonBallCharacterGrid = () => {
     } finally {
       setLoading(false)
     }
-  }, [page, loading])
+  }, [page])
 
   useEffect(() => {
     loadCharacters(1, true)
@@ -227,6 +228,18 @@ const DragonBallCharacterGrid = () => {
             )
           })}
         </div>
+                {loading && (
+          <AppLoader 
+            color="#7c3aed" 
+            label="Cargando Mundo Mágico" 
+            messages={[
+              "Agitando varitas...",
+              "Preparando pociones...",
+              "Consultando al Sombrero Seleccionador...",
+              "Enviando lechuzas..."
+            ]} 
+          />
+        )}
 
         {loading && (
           <div className="loading">

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ArrowLeft, Shield } from 'lucide-react'
+import { Search, ArrowLeft } from 'lucide-react'
 import { lotrAPI } from '../services/api'
+import AppLoader from '../components/AppLoader'
 import './CharacterGrid.css'
 
-// Placeholder icons (using ones that fit the theme)
 import Personajes from '../assets/SUPERapi/lort-personajes.png'
 import Libros from '../assets/SUPERapi/lort-libros.png'
 import Mundos from '../assets/SUPERapi/lort-mundos.png'
@@ -26,10 +26,10 @@ const LOTRCharacterGrid = () => {
     { id: 'Personajes', icon: Personajes, label: 'Personajes' },
     { id: 'Libros', icon: Libros, label: 'Libros' },
     { id: 'Mundos', icon: Mundos, label: 'Mundos' },
+    { id: 'Capitulos', icon: Capitulos, label: 'Capitulos' },
     { id: 'Peliculas', icon: Peliculas, label: 'Peliculas' }
   ]
 
-  // Load data based on category
   const loadData = useCallback(async (category, isInitial = false, page = 1) => {
     setLoading(true)
     setError(null)
@@ -39,7 +39,7 @@ const LOTRCharacterGrid = () => {
 
       switch (category) {
         case 'Personajes': {
-          const charResult = await lotrAPI.getCharacters(page, 20)
+          const charResult = await lotrAPI.getCharacters(page, 100)
           data = charResult.results
           hasMoreData = charResult.hasMore
           break
@@ -51,6 +51,12 @@ const LOTRCharacterGrid = () => {
         }
         case 'Mundos': {
           data = await lotrAPI.getLocations()
+          hasMoreData = false
+          break
+        }
+        case 'Capitulos': {
+          const bookId = '5cf5805fb53e011a64671582'
+          data = await lotrAPI.getBookChapters(bookId)
           hasMoreData = false
           break
         }
@@ -78,7 +84,7 @@ const LOTRCharacterGrid = () => {
       console.error('Error loading LOTR data:', err)
       setError('Error al cargar datos de la Tierra Media')
     } finally {
-      setLoading(false)
+      setLoading(false)  // ✅ Siempre se ejecuta, loading vuelve a false
     }
   }, [])
 
@@ -92,7 +98,6 @@ const LOTRCharacterGrid = () => {
       setFilteredItems(items)
       return
     }
-
     const filtered = items.filter(item => {
       const name = item.name || item.title || ''
       return name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -106,7 +111,6 @@ const LOTRCharacterGrid = () => {
   }
 
   const handleItemClick = (item) => {
-    // Only navigate for characters
     if (activeCategory === 'Personajes' && item._id) {
       navigate(`/lotr/character/${item._id}`)
     }
@@ -116,51 +120,52 @@ const LOTRCharacterGrid = () => {
     loadData(activeCategory, false, currentPage + 1)
   }
 
-  // Get appropriate image based on category
   const getItemImage = (item) => {
     switch (activeCategory) {
       case 'Personajes':
         return item.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&size=400&background=10b981&color=fff`
       case 'Libros':
-        return item.cover || `https://via.placeholder.com/300x450?text=${encodeURIComponent(item.name)}`
+        return item.cover || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&size=400&background=3d1f00&color=d4af37`
       case 'Mundos':
-        return item.image || `https://via.placeholder.com/400x300?text=${encodeURIComponent(item.name)}`
+        return item.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&size=400&background=1a3a2a&color=10b981`
+      case 'Capitulos':
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(item.chapterName || 'Cap')}&size=400&background=10b981&color=fff`
       case 'Peliculas':
-        return item.poster || `https://via.placeholder.com/300x450?text=${encodeURIComponent(item.name)}`
+        return item.poster || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&size=400&background=3d1f00&color=d4af37`
       default:
-        return 'https://via.placeholder.com/300x400?text=LOTR'
+        return `https://ui-avatars.com/api/?name=LOTR&size=400&background=10b981&color=fff`
     }
   }
 
-  // Get item title based on category
   const getItemTitle = (item) => {
-    return item.name || item.title || 'Sin título'
+    return item.name || item.chapterName || item.title || 'Sin título'
   }
 
-  // Get item subtitle based on category
   const getItemSubtitle = (item) => {
     switch (activeCategory) {
-      case 'Personajes':
-        return item.race || 'Desconocido'
-      case 'Libros':
-        return 'Libro'
-      case 'Mundos':
-        return 'Ubicación'
-      case 'Peliculas':
-        return item.runtimeInMinutes ? `${item.runtimeInMinutes} min` : 'Película'
-      default:
-        return ''
+      case 'Personajes': return item.race || 'Desconocido'
+      case 'Libros':     return 'Libro'
+      case 'Mundos':     return item.region || 'Ubicación'
+      case 'Capitulos':  return 'Capítulo'
+      case 'Peliculas':  return item.runtimeInMinutes ? `${item.runtimeInMinutes} min` : 'Película'
+      default:           return ''
     }
   }
 
   return (
     <div className="character-grid-page" style={{ background: 'radial-gradient(circle at top, #0f172a 0%, #020617 100%)' }}>
+
+      {/* ── SIDEBAR ── */}
       <aside className="sidebar" style={{ borderRightColor: 'rgba(16, 185, 129, 0.3)' }}>
-        <div className="sidebar-logo" onClick={() => navigate("/")} style={{ borderColor: 'rgba(16, 185, 129, 0.4)', background: 'radial-gradient(circle at top, rgba(16, 185, 129, 0.2), transparent 70%)' }}>
-          <div style={{ color: '#10b981'}}>
+        <div
+          className="sidebar-logo"
+          onClick={() => navigate("/")}
+          style={{ borderColor: 'rgba(16, 185, 129, 0.4)', background: 'radial-gradient(circle at top, rgba(16, 185, 129, 0.2), transparent 70%)' }}
+        >
+          <div style={{ color: '#10b981' }}>
             <img src="/src/assets/icons/lotr.webp" alt="Lord of the Rings" />
-        </div>
           </div>
+        </div>
 
         <div className="sidebar-categories">
           {categories.map((category) => (
@@ -175,102 +180,117 @@ const LOTRCharacterGrid = () => {
               } : {}}
               title={category.label}
             >
-              <img
-                src={category.icon}
-                alt={category.label}
-                className="category-icon"
-              />
+              <img src={category.icon} alt={category.label} className="category-icon" />
               <span>{category.label}</span>
             </button>
           ))}
         </div>
       </aside>
 
-  <main className="main-content">
-    <header className="grid-header">
-      <button className="back-btn" onClick={() => navigate("/")}>
-        <ArrowLeft size={20} />
-        Volver
-      </button>
+      {/* ── MAIN ── */}
+      <main className="main-content">
+        <header className="grid-header">
+          <button className="back-btn" onClick={() => navigate("/")}>
+            <ArrowLeft size={20} />
+            Volver
+          </button>
 
-      <form className="search-form" onSubmit={handleSearch}>
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Buscar en la Tierra Media..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button type="submit" className="search-btn" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff' }}>
-          <Search size={20} />
-          Buscar
-        </button>
-      </form>
-    </header>
-
-    {error && <div className="error-message" style={{ borderLeft: '4px solid #10b981' }}>{error}</div>}
-
-    <div className="characters-grid">
-      {filteredItems.map((item, index) => (
-        <div
-          key={item._id || item.id || index}
-          className="character-card"
-          style={{ '--border-color': '#10b981' }}
-          onClick={() => handleItemClick(item)}
-        >
-          <div className="card-glow"></div>
-          <div className="card-id">#{(item._id || item.id || '').slice(-4)}</div>
-
-          <div className="card-image-container" style={{ background: 'radial-gradient(circle at top, #10b981, #000)' }}>
-            <img
-              src={getItemImage(item)}
-              alt={getItemTitle(item)}
-              className="card-image"
-              onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/300x400?text=' + encodeURIComponent(getItemTitle(item))
-              }}
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Buscar en la Tierra Media..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+            <button
+              type="submit"
+              className="search-btn"
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff' }}
+            >
+              <Search size={20} />
+              Buscar
+            </button>
+          </form>
+        </header>
 
-          <div className="card-info">
-            <h3 className="card-name">{getItemTitle(item)}</h3>
-            <div className="card-badges">
-              <span
-                className="badge"
-                style={{ backgroundColor: '#10b981', color: '#fff' }}
+        {error && (
+          <div className="error-message" style={{ borderLeft: '4px solid #10b981' }}>
+            {error}
+          </div>
+        )}
+
+        {/* ✅ Grid — solo visible cuando NO está cargando */}
+        {!loading && (
+          <div className="characters-grid">
+            {filteredItems.map((item, index) => (
+              <div
+                key={item._id || item.id || index}
+                className="character-card"
+                style={{ '--border-color': '#10b981' }}
+                onClick={() => handleItemClick(item)}
               >
-                {getItemSubtitle(item)}
-              </span>
-            </div>
+                <div className="card-glow"></div>
+                <div className="card-id">#{(item._id || item.id || '').slice(-4)}</div>
+
+                <div className="card-image-container" style={{ background: 'radial-gradient(circle at top, #10b981, #000)' }}>
+                  <img
+                    src={getItemImage(item)}
+                    alt={getItemTitle(item)}
+                    className="card-image"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getItemTitle(item))}&size=400&background=3d1f00&color=d4af37`
+                    }}
+                  />
+                </div>
+
+                <div className="card-info">
+                  <h3 className="card-name">{getItemTitle(item)}</h3>
+                  <div className="card-badges">
+                    <span className="badge" style={{ backgroundColor: '#10b981', color: '#fff' }}>
+                      {getItemSubtitle(item)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      ))}
-    </div>
+        )}
 
-    {loading && (
-      <div className="loading">
-        <div className="spinner" style={{ borderTopColor: '#10b981' }}></div>
-      </div>
-    )}
+        {/* ✅ Loader — solo cuando loading === true */}
+        {loading && (
+          <AppLoader
+            color="#f59e0b"
+            label="Cargando Tierra Media"
+            messages={[
+              "Consultando los archivos de Minas Tirith...",
+              "Hablando con los Ents...",
+              "Evitando a los Nazgûl...",
+              "Forjando los anillos..."
+            ]}
+          />
+        )}
 
-    {!loading && hasMore && filteredItems.length > 0 && activeCategory === 'Personajes' && !searchTerm && (
-      <div className="load-more-container">
-        <button
-          className="load-more-btn"
-          onClick={loadMore}
-          style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', borderColor: '#10b981' }}
-        >
-          Cargar más personajes
-        </button>
-      </div>
-    )}
+        {/* ✅ Botón cargar más */}
+        {!loading && hasMore && filteredItems.length > 0 && activeCategory === 'Personajes' && !searchTerm && (
+          <div className="load-more-container">
+            <button
+              className="load-more-btn"
+              onClick={loadMore}
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', borderColor: '#10b981' }}
+            >
+              Cargar más personajes
+            </button>
+          </div>
+        )}
 
-    {!loading && filteredItems.length === 0 && !error && (
-      <div className="empty-state">
-        <p>No se encontraron rastros en estas tierras</p>
-      </div>
-    )}
-  </main>
+        {/* ✅ Estado vacío */}
+        {!loading && filteredItems.length === 0 && !error && (
+          <div className="empty-state">
+            <p>No se encontraron rastros en estas tierras</p>
+          </div>
+        )}
+      </main>
     </div>
   )
 }

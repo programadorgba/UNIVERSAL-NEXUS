@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Search, ArrowLeft } from 'lucide-react'
 import { pokemonAPI } from '../services/api'
 import './CharacterGrid.css'
+import AppLoader from '../components/AppLoader'
 
 // Importar iconos de categorías
 import iconTodos from '../assets/SUPERapi/todos.png'
@@ -71,7 +72,7 @@ const PokemonCharacterGrid = () => {
     } finally {
       setLoading(false)
     }
-  }, [page, loading])
+  }, [page])
 
   useEffect(() => {
     loadPokemon(1, true)
@@ -258,7 +259,18 @@ const PokemonCharacterGrid = () => {
             <div className="spinner"></div>
           </div>
         )}
-
+        {loading && (
+          <AppLoader 
+            color="#7c3aed" 
+            label="Cargando Mundo Mágico" 
+            messages={[
+              "Agitando varitas...",
+              "Preparando pociones...",
+              "Consultando al Sombrero Seleccionador...",
+              "Enviando lechuzas..."
+            ]} 
+          />
+        )}
         {!loading && hasMore && filteredPokemon.length > 0 && activeCategory === 'all' && !searchTerm && (
           <div className="load-more-container">
             <button className="load-more-btn" onClick={() => loadPokemon()}>
